@@ -1,12 +1,12 @@
 package formatter
 
 import (
-	"io"
-	"fmt"
-	"errors"
 	"bytes"
-	"text/template"
+	"errors"
+	"fmt"
+	"io"
 	"text/tabwriter"
+	"text/template"
 )
 
 type formatter struct {
@@ -64,7 +64,7 @@ func (f *formatter) Write(item interface{}) (err error) {
 	if item == nil {
 		return errors.New("empty item")
 	}
-	if f.buffer != nil{
+	if f.buffer != nil {
 		err = f.templates.line.Execute(f.buffer, item)
 		if err != nil {
 			return err
