@@ -15,8 +15,8 @@ Tabular data formatting package.
 
 - [x] table text/template
 - [x] text/template
-- [x] raw
-- [x] pretty
+- [ ] raw
+- [ ] pretty
 - [x] json
 
 ## Installation
