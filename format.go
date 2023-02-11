@@ -12,9 +12,12 @@ const (
 	RawFormatKey    = "raw"
 	PrettyFormatKey = "pretty"
 	JSONFormatKey   = "json"
+	YAMLFormatKey   = "yaml"
 
 	DefaultQuietFormat = "{{.ID}}"
 	jsonFormat         = "{{json .}}"
+	rawFormat          = "{{raw .}}\n"
+	yamlFormat         = "{{yaml .}}\n"
 )
 
 var (
@@ -38,6 +41,14 @@ func (f Format) IsJSON() bool {
 	return string(f) == JSONFormatKey
 }
 
+func (f Format) IsRaw() bool {
+	return string(f) == RawFormatKey
+}
+
+func (f Format) IsYAML() bool {
+	return string(f) == YAMLFormatKey
+}
+
 // Contains returns true if the format contains the substring
 func (f Format) Contains(sub string) bool {
 	return strings.Contains(string(f), sub)
@@ -50,6 +61,10 @@ func (f Format) String() string {
 		format = format[len(TableFormatKey):]
 	case f.IsJSON():
 		format = jsonFormat
+	case f.IsRaw():
+		format = rawFormat
+	case f.IsYAML():
+		format = yamlFormat
 	}
 	format = strings.Trim(format, " ")
 	return formatReplacer.Replace(format)

@@ -5,7 +5,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/mantyr/formatter?v=1)][goreport]
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](LICENSE.md)
 
-This is not a stable version.
+This stable version.
 
 ## Description
 
@@ -15,13 +15,22 @@ Tabular data formatting package.
 
 - [x] table text/template
 - [x] text/template
-- [ ] raw
+- [x] raw
 - [ ] pretty
 - [x] json
+- [x] yaml
 
 ## Installation
 
     $ go get github.com/mantyr/formatter
+
+## Format examples
+
+- `table {{.ID}}\t{{.Name}}` - Aligns columns and adds a header
+- `{{.ID}}\t{{.Name}}`       - Displays to a string according to the format
+- `raw`                      - Displays the object line by line (field: value)
+- `json`                     - Displays in json format
+- `yaml`                     - Displays in yaml format
 
 ## Example
 
@@ -40,7 +49,7 @@ func main() {
 }
 
 func Print(items []interface{}) error {
-	format := formatter.Format("{{table .ID\t.Name\t}}")
+	format := formatter.Format("table {{.ID}}\t{{.Name}}\t")
 	header := formatter.Header(map[string]string{
 		"ID":   "Identifier",
 		"Name": "Name",

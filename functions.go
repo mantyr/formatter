@@ -1,3 +1,4 @@
+// nolint:errcheck
 package formatter
 
 import (
@@ -5,12 +6,18 @@ import (
 	"encoding/json"
 	"strings"
 	"text/template"
+
+	"gopkg.in/yaml.v3"
+
+	"github.com/mantyr/formatter/encoding/raw"
 )
 
 // BasicFunctions are the set of initial
 // functions provided to every template.
 var BasicFunctions = template.FuncMap{
+	"raw":      MarshalRAW,
 	"json":     MarshalJSON,
+	"yaml":     MarshalYAML,
 	"split":    strings.Split,
 	"join":     strings.Join,
 	"title":    strings.Title, //nolint:staticcheck // strings.Title is deprecated, but we only use it for ASCII, so replacing with golang.org/x/text is out of scope
@@ -26,7 +33,13 @@ var BasicFunctions = template.FuncMap{
 // Some functions like `pad` are not overridden (to preserve alignment
 // with the columns).
 var HeaderFunctions = template.FuncMap{
+	"raw": func(v string) string {
+		return v
+	},
 	"json": func(v string) string {
+		return v
+	},
+	"yaml": func(v string) string {
 		return v
 	},
 	"split": func(v string, _ string) string {
@@ -58,6 +71,21 @@ func MarshalJSON(v interface{}) string {
 	buf := &bytes.Buffer{}
 	enc := json.NewEncoder(buf)
 	enc.SetEscapeHTML(false)
+	enc.Encode(v)
+	return strings.TrimSpace(buf.String())
+}
+
+func MarshalYAML(v interface{}) string {
+	buf := &bytes.Buffer{}
+	enc := yaml.NewEncoder(buf)
+	enc.SetIndent(3)
+	enc.Encode(v)
+	return strings.TrimSpace(buf.String())
+}
+
+func MarshalRAW(v interface{}) string {
+	buf := &bytes.Buffer{}
+	enc := raw.NewEncoder(buf)
 	enc.Encode(v)
 	return strings.TrimSpace(buf.String())
 }
