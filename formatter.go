@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strings"
 	"text/tabwriter"
 	"text/template"
 )
@@ -66,14 +67,18 @@ func (f *formatter) Write(item interface{}) (err error) {
 		return errors.New("empty item")
 	}
 	if f.buffer != nil {
-		err = f.templates.line.Execute(f.buffer, item)
+		err = dontPanic(func() error {
+			return f.templates.line.Execute(f.buffer, item)
+		})
 		if err != nil {
 			return err
 		}
 		_, err = f.buffer.WriteString("\n")
 		return err
 	}
-	err = f.templates.line.Execute(f.output, item)
+	err = dontPanic(func() error {
+		return f.templates.line.Execute(f.output, item)
+	})
 	if err != nil {
 		return err
 	}
@@ -86,7 +91,9 @@ func (f *formatter) Flush() error {
 	case f.format.IsTable():
 		t := tabwriter.NewWriter(f.output, 10, 1, 3, ' ', 0)
 		if f.header != nil {
-			err := f.templates.header.Execute(t, f.header)
+			err := dontPanic(func() error {
+				return f.templates.header.Execute(t, f.header)
+			})
 			if err != nil {
 				return err
 			}
@@ -100,4 +107,22 @@ func (f *formatter) Flush() error {
 		return nil
 	}
 	return nil
+}
+
+func dontPanic(f func() error) (err error) {
+	defer func(err *error) {
+		if r := recover(); r != nil {
+			*err = errors.New("bad format")
+		}
+	}(&err)
+	defer func(err *error) {
+		if *err != nil {
+			err2 := *err
+			if strings.Contains(err2.Error(), "can't evaluate field") {
+				*err = errors.New("bad format")
+			}
+		}
+	}(&err)
+	err = f()
+	return err
 }

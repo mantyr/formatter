@@ -121,6 +121,24 @@ func TestFormatter(t *testing.T) {
 			)
 			check(buf, f, format, items, expected)
 		})
+		Convey("Bad format", func() {
+			Convey("No field in struct - no table", func() {
+				format := Format("{{.DDD}}")
+				expected := "bad format"
+				checkError(buf, f, format, items, expected)
+			})
+			Convey("No field in struct - table", func() {
+				format := Format("table {{.DDD}}")
+				expected := "bad format"
+				checkError(buf, f, format, items, expected)
+			})
+			Convey("text/template format error", func() {
+				format := Format("table {{.OS}}\t{{.Architecture]}\t{{.CreatedAt}}")
+				err := f.SetFormat(format)
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, "template parsing error: template: :1: bad character U+005D ']'")
+			})
+		})
 	})
 }
 
@@ -131,4 +149,12 @@ func check(buf *bytes.Buffer, f Formatter, format Format, items []Item, expected
 	}
 	So(f.Flush(), ShouldBeNil)
 	So(buf.String(), ShouldEqual, expected)
+}
+
+func checkError(buf *bytes.Buffer, f Formatter, format Format, items []Item, expectedError string) {
+	for _, item := range items {
+		err := f.Write(item)
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, expectedError)
+	}
 }
